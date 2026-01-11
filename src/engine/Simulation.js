@@ -1,7 +1,10 @@
+import World from "./World"
+
 export default class Simulation {
   constructor() {
     this.isRunning = false
     this.tickCount = 0
+    this.world = new World(800, 600)
   }
 
   start() {
@@ -27,5 +30,9 @@ export default class Simulation {
   tick() {
     this.tickCount++
     console.log(`Tick ${this.tickCount}`)
+
+    if (this.tickCount >= 100) {
+      this.stop()
+    }
   }
 }
