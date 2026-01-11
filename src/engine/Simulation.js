@@ -1,3 +1,4 @@
+import BoundsRule from "../scenarios/BoundsRule.js"
 import TestAgent from "../scenarios/TestAgent.js"
 import World from "./World.js"
 
@@ -6,9 +7,12 @@ export default class Simulation {
     this.isRunning = false
     this.tickCount = 0
     this.world = new World(800, 600)
+    this.rules = []
 
     this.agent = new TestAgent(100, 100)
     this.world.addEntity(this.agent)
+
+    this.addRule(new BoundsRule())
   }
 
   start() {
@@ -42,6 +46,10 @@ export default class Simulation {
       }
     }
 
+    for (const rule of this.rules) {
+      rule.apply(this.world)
+    }
+
     console.log(
       `Tick ${this.tickCount} | Entities: ${this.world.getEntities().length}`
     )
@@ -51,5 +59,9 @@ export default class Simulation {
     if (this.tickCount >= 100) {
       this.stop()
     }
+  }
+
+  addRule(rule) {
+    this.rules.push(rule)
   }
 }
