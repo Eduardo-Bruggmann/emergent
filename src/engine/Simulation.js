@@ -1,3 +1,4 @@
+import Entity from "./Entity"
 import World from "./World"
 
 export default class Simulation {
@@ -5,6 +6,9 @@ export default class Simulation {
     this.isRunning = false
     this.tickCount = 0
     this.world = new World(800, 600)
+
+    const e = new Entity(100, 100)
+    this.world.addEntity(e)
   }
 
   start() {
@@ -29,7 +33,9 @@ export default class Simulation {
 
   tick() {
     this.tickCount++
-    console.log(`Tick ${this.tickCount}`)
+    console.log(
+      `Tick ${this.tickCount} | Entities: ${this.world.getEntities().length}`
+    )
 
     if (this.tickCount >= 100) {
       this.stop()
