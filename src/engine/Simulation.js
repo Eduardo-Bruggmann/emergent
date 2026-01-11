@@ -1,5 +1,5 @@
-import Entity from "./Entity"
-import World from "./World"
+import TestAgent from "../scenarios/TestAgent.js"
+import World from "./World.js"
 
 export default class Simulation {
   constructor() {
@@ -7,8 +7,8 @@ export default class Simulation {
     this.tickCount = 0
     this.world = new World(800, 600)
 
-    const e = new Entity(100, 100)
-    this.world.addEntity(e)
+    this.agent = new TestAgent(100, 100)
+    this.world.addEntity(this.agent)
   }
 
   start() {
@@ -33,9 +33,20 @@ export default class Simulation {
 
   tick() {
     this.tickCount++
+
+    const entities = this.world.getEntities()
+
+    for (const entity of entities) {
+      if (typeof entity.update === "function") {
+        entity.update(this.world)
+      }
+    }
+
     console.log(
       `Tick ${this.tickCount} | Entities: ${this.world.getEntities().length}`
     )
+
+    console.log(`Agent position: ${this.agent.x}, ${this.agent.y}`)
 
     if (this.tickCount >= 100) {
       this.stop()
