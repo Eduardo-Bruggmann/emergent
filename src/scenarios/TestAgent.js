@@ -6,6 +6,6 @@ export default class TestAgent extends Agent {
   }
 
   act(world) {
-    this.x += 1
+    this.x += 2
   }
 }

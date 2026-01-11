@@ -1,3 +1,4 @@
+import CanvasRenderer from "../renderer/CanvasRenderer.js"
 import BoundsRule from "../scenarios/BoundsRule.js"
 import TestAgent from "../scenarios/TestAgent.js"
 import RandomScheduler from "./RandomScheduler.js"
@@ -15,6 +16,9 @@ export default class Simulation {
 
     this.addRule(new BoundsRule())
     this.scheduler = new RandomScheduler()
+
+    const canvas = document.getElementById("sim-canvas")
+    this.renderer = new CanvasRenderer(canvas, this.world)
   }
 
   start() {
@@ -57,6 +61,8 @@ export default class Simulation {
     )
 
     console.log(`Agent position: ${this.agent.x}, ${this.agent.y}`)
+
+    this.renderer.render()
 
     if (this.tickCount >= 100) {
       this.stop()
