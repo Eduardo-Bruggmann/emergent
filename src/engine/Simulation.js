@@ -1,5 +1,6 @@
 import BoundsRule from "../scenarios/BoundsRule.js"
 import TestAgent from "../scenarios/TestAgent.js"
+import RandomScheduler from "./RandomScheduler.js"
 import World from "./World.js"
 
 export default class Simulation {
@@ -13,6 +14,7 @@ export default class Simulation {
     this.world.addEntity(this.agent)
 
     this.addRule(new BoundsRule())
+    this.scheduler = new RandomScheduler()
   }
 
   start() {
@@ -38,9 +40,9 @@ export default class Simulation {
   tick() {
     this.tickCount++
 
-    const entities = this.world.getEntities()
+    const scheduled = this.scheduler.schedule(this.world.getEntities())
 
-    for (const entity of entities) {
+    for (const entity of scheduled) {
       if (typeof entity.update === "function") {
         entity.update(this.world)
       }
