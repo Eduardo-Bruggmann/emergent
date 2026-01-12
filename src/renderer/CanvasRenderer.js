@@ -18,7 +18,7 @@ export default class CanvasRenderer {
   }
 
   drawEntity(entity) {
-    this.ctx.fillStyle = "black"
+    this.ctx.fillStyle = "pink"
     this.ctx.beginPath()
     this.ctx.arc(entity.x, entity.y, 5, 0, Math.PI * 2)
     this.ctx.fill()

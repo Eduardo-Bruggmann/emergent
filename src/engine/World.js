@@ -14,6 +14,10 @@ export default class World {
   }
 
   getEntities() {
-    return this.entities
+    return [...this.entities]
+  }
+
+  clear() {
+    this.entities = []
   }
 }
