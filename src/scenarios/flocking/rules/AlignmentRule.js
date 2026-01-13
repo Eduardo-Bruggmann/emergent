@@ -29,9 +29,6 @@ export default class AlignmentRule extends Rule {
       }
 
       if (count > 0) {
-        a.vx += (avgVx / count - a.vx) * this.strength
-        a.vy += (avgVy / count - a.vy) * this.strength
-
         a.applyForce(
           (avgVx / count - a.vx) * this.strength,
           (avgVy / count - a.vy) * this.strength
