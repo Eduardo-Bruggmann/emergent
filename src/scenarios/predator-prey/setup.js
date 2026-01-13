@@ -1,6 +1,6 @@
 import Predator from "./Predator.js"
 import Prey from "./Prey.js"
-import BoundsRule from "./rules/BoundsRule.js"
+import BoundsRule from "../../engine/BoundsRule.js"
 import PredationRule from "./rules/PredationRule.js"
 
 export function setupPredatorPreyScenario(simulation) {

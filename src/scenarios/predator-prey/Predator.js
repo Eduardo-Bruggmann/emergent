@@ -3,6 +3,7 @@ import Agent from "../../engine/Agent.js"
 export default class Predator extends Agent {
   constructor(x, y) {
     super(x, y)
+
     this.speed = 2.2
     this.target = null
 
