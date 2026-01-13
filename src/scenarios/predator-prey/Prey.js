@@ -3,8 +3,11 @@ import Agent from "../../engine/Agent.js"
 export default class Prey extends Agent {
   constructor(x, y) {
     super(x, y)
+
     this.speed = 1.5
     this.direction = Math.random() * Math.PI * 2
+
+    this.color = "green"
   }
 
   decide() {

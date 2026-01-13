@@ -5,6 +5,8 @@ export default class Predator extends Agent {
     super(x, y)
     this.speed = 2.2
     this.target = null
+
+    this.color = "red"
   }
 
   decide(world) {
