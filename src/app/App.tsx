@@ -1,28 +1,23 @@
 import { useEffect, useRef, useState } from "preact/hooks"
-import Controls from "./Controls.jsx"
-import Simulation from "../engine/Simulation.js"
-import { setupPredatorPreyScenario } from "../scenarios/predator-prey/setup.js"
-import { setupFlockingScenario } from "../scenarios/flocking/setup.js"
+import Controls from "./Controls"
+import Simulation from "@/core/Simulation"
+import { setupPredatorPreyScenario } from "@/scenarios/predator-prey/setup"
 
 export default function App() {
-  const canvasRef = useRef(null)
-  const simulationRef = useRef(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const simulationRef = useRef<Simulation | null>(null)
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
     if (!canvasRef.current) return
 
-    const sim = new Simulation(canvasRef.current)
-    // setupPredatorPreyScenario(sim)
-    setupFlockingScenario(sim)
-
     simulationRef.current = new Simulation(
       canvasRef.current,
-      setupFlockingScenario
+      setupPredatorPreyScenario
     )
     setReady(true)
 
-    return () => simulationRef.current.stop()
+    return () => simulationRef.current?.stop()
   }, [])
 
   return (
@@ -42,7 +37,7 @@ export default function App() {
             ref={canvasRef}
             width={1000}
             height={520}
-            class="w-full h-auto block bg-slate-950 p-2 rounded"
+            class="w-full h-auto block bg-slate-950 rounded"
           />
         </div>
       </div>

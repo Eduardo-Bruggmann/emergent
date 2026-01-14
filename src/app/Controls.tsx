@@ -1,9 +1,25 @@
-export default function Controls({ simulation, disabled }) {
+import type Simulation from "@/core/Simulation"
+
+type ControlAction = "start" | "stop" | "reset"
+
+interface ControlsProps {
+  simulation: Simulation | null
+  disabled?: boolean
+}
+
+export default function Controls({ simulation, disabled }: ControlsProps) {
   const isDisabled = disabled || !simulation
 
-  const call = (action) => {
-    if (isDisabled) return
-    simulation[action]()
+  const call = (action: ControlAction) => {
+    if (!simulation || isDisabled) return
+
+    const actions: Record<ControlAction, () => void> = {
+      start: () => simulation.start(),
+      stop: () => simulation.stop(),
+      reset: () => simulation.reset(),
+    }
+
+    actions[action]()
   }
 
   const base =
