@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "preact/hooks"
 import Controls from "./Controls"
 import Simulation from "@/engine/Simulation"
-import { setupFlockingScenario } from "@/scenarios/flocking/setup"
+import { setupDLAScenario } from "@/scenarios/dla/setup"
+// import { setupFlockingScenario } from "@/scenarios/flocking/setup"
 // import { setupForestFireScenario } from "@/scenarios/forest-fire/setup"
 // import { setupPredatorPreyScenario } from "@/scenarios/predator-prey/setup"
 // import { setupVirusScenario } from "@/scenarios/virus/setup"
@@ -14,10 +15,7 @@ export default function App() {
   useEffect(() => {
     if (!canvasRef.current) return
 
-    simulationRef.current = new Simulation(
-      canvasRef.current,
-      setupFlockingScenario
-    )
+    simulationRef.current = new Simulation(canvasRef.current, setupDLAScenario)
     setReady(true)
 
     return () => simulationRef.current?.stop()
