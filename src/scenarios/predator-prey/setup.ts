@@ -1,24 +1,24 @@
 import PredationRule from "./rules/PredationRule"
-import BoundsRule from "@/core/shared/BoundsRule"
-import Predator from "./Predator"
-import Prey from "./Prey"
-import type Simulation from "@/core/Simulation"
+import BoundsRule from "@/engine/shared/BoundsRule"
+import { createPredator } from "./Predator"
+import { createPrey } from "./Prey"
+import type Simulation from "@/engine/Simulation"
 
 export function setupPredatorPreyScenario(simulation: Simulation) {
-  const world = simulation.getWorld()
+  const world = simulation.world
 
   world.clear()
   simulation.clearRules()
 
   for (let i = 0; i < 20; i++) {
     world.addEntity(
-      new Prey(Math.random() * world.width, Math.random() * world.height)
+      createPrey(Math.random() * world.width, Math.random() * world.height)
     )
   }
 
   for (let i = 0; i < 5; i++) {
     world.addEntity(
-      new Predator(Math.random() * world.width, Math.random() * world.height)
+      createPredator(Math.random() * world.width, Math.random() * world.height)
     )
   }
 

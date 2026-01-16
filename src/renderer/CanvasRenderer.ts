@@ -1,5 +1,5 @@
-import Entity from "@/core/Entity"
-import World from "@/core/World"
+import Entity from "@/engine/Entity"
+import World from "@/engine/World"
 
 export default class CanvasRenderer {
   private readonly ctx: CanvasRenderingContext2D
@@ -19,7 +19,7 @@ export default class CanvasRenderer {
   render() {
     this.clear()
 
-    for (const entity of this.world.getEntities()) {
+    for (const entity of this.world.entities) {
       this.drawEntity(entity)
     }
   }

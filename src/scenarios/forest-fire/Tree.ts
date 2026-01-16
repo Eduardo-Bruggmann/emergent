@@ -1,55 +1,67 @@
-import Agent from "@/core/Agent"
-import type World from "@/core/World"
+import Entity, { type EntityBehavior } from "@/engine/Entity"
 
-type TreeState = "tree" | "burning" | "burned"
+export type TreeStage = "tree" | "burning" | "burned"
+export type TreeState = { status: TreeStage; burnTime: number }
 
-export default class Tree extends Agent {
-  private state: TreeState
-  private burnTime = 0
-  private readonly maxBurnTime = 120
-  private readonly fireRadius = 18
-  private readonly spreadChance = 0.05
+export const TREE_KIND = "tree"
 
-  constructor(x: number, y: number, state: TreeState = "tree") {
-    super(x, y, 4)
-    this.state = state
-    this.syncColor()
-  }
+const MAX_BURN_TIME = 120
+const FIRE_RADIUS = 18
+const SPREAD_CHANCE = 0.05
 
-  getState(): TreeState {
-    return this.state
-  }
+export function createTree(
+  x: number,
+  y: number,
+  stage: TreeStage = "tree"
+): Entity<TreeState> {
+  const state: TreeState = { status: stage, burnTime: 0 }
 
-  setState(state: TreeState) {
-    this.state = state
-    this.syncColor()
-  }
+  const behavior: EntityBehavior<TreeState> = {
+    decide: ({ world, entity, state }) => {
+      if (state.status !== "burning") return
 
-  protected decide(world: World) {
-    if (this.state !== "burning") return
+      state.burnTime++
 
-    this.burnTime++
+      for (const other of world.getEntitiesByKind<TreeState>(TREE_KIND)) {
+        if (other === entity) continue
 
-    for (const other of world.getEntitiesOfType(Tree)) {
-      if (other === this || other.state !== "tree") continue
+        const otherState = other.state
+        if (otherState.status !== "tree") continue
 
-      const distance = this.distanceTo(other)
-
-      if (distance <= this.fireRadius && Math.random() < this.spreadChance) {
-        other.setState("burning")
+        if (
+          entity.distanceTo(other) <= FIRE_RADIUS &&
+          Math.random() < SPREAD_CHANCE
+        ) {
+          setTreeState(other, "burning")
+        }
       }
-    }
 
-    if (this.burnTime >= this.maxBurnTime) {
-      this.setState("burned")
-    }
+      if (state.burnTime >= MAX_BURN_TIME) {
+        setTreeState(entity, "burned")
+      }
+    },
   }
 
-  protected act(_world: World) {}
+  const tree = new Entity<TreeState>({
+    kind: TREE_KIND,
+    x,
+    y,
+    radius: 4,
+    state,
+    behavior,
+  })
 
-  private syncColor() {
-    if (this.state === "tree") this.color = "#22c55e"
-    if (this.state === "burning") this.color = "#f97316"
-    if (this.state === "burned") this.color = "#475569"
-  }
+  setTreeState(tree, stage)
+  return tree
+}
+
+export function setTreeState(entity: Entity<TreeState>, stage: TreeStage) {
+  entity.mutateState((state) => {
+    state.status = stage
+    if (stage !== "burning") state.burnTime = 0
+  })
+
+  if (stage === "tree") entity.color = "#22c55e"
+  if (stage === "burning") entity.color = "#f97316"
+  if (stage === "burned") entity.color = "#475569"
 }

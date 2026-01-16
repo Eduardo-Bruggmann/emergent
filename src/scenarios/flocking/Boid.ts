@@ -1,42 +1,57 @@
-import Agent from "@/core/Agent"
-import type World from "@/core/World"
-import type { Vector2 } from "@/core/Entity"
+import Entity, { type EntityBehavior, type Vector2 } from "@/engine/Entity"
 
-export default class Boid extends Agent {
-  private vx: number
-  private vy: number
-  private readonly maxSpeed = 2
+export const BOID_KIND = "boid"
 
-  constructor(x: number, y: number) {
-    super(x, y, 6, "purple")
+export type BoidState = {
+  vx: number
+  vy: number
+  maxSpeed: number
+}
 
-    this.vx = Math.random() * 2 - 1
-    this.vy = Math.random() * 2 - 1
+export function createBoid(x: number, y: number): Entity<BoidState> {
+  const state: BoidState = {
+    vx: Math.random() * 2 - 1,
+    vy: Math.random() * 2 - 1,
+    maxSpeed: 2,
   }
 
-  get velocity(): Vector2 {
-    return { x: this.vx, y: this.vy }
+  const behavior: EntityBehavior<BoidState> = {
+    act: ({ entity, state }) => {
+      limitSpeed(state)
+      entity.translate(state.vx, state.vy)
+    },
   }
 
-  applyForce(fx: number, fy: number) {
-    this.vx += fx
-    this.vy += fy
-  }
+  return new Entity<BoidState>({
+    kind: BOID_KIND,
+    x,
+    y,
+    radius: 6,
+    color: "purple",
+    state,
+    behavior,
+  })
+}
 
-  protected decide(_world: World) {
-    // Rules update velocity; boid keeps current heading here.
-  }
+export function boidVelocity(boid: Entity<BoidState>): Vector2 {
+  return { x: boid.state.vx, y: boid.state.vy }
+}
 
-  protected act(_world: World) {
-    this.limitSpeed()
-    this.translate(this.vx, this.vy)
-  }
+export function applyBoidForce(
+  boid: Entity<BoidState>,
+  fx: number,
+  fy: number
+) {
+  boid.mutateState((state) => {
+    state.vx += fx
+    state.vy += fy
+  })
+}
 
-  private limitSpeed() {
-    const speed = Math.hypot(this.vx, this.vy)
-    if (speed > this.maxSpeed) {
-      this.vx = (this.vx / speed) * this.maxSpeed
-      this.vy = (this.vy / speed) * this.maxSpeed
-    }
+function limitSpeed(state: BoidState) {
+  const speed = Math.hypot(state.vx, state.vy)
+  if (speed > state.maxSpeed) {
+    state.vx = (state.vx / speed) * state.maxSpeed
+    state.vy = (state.vy / speed) * state.maxSpeed
   }
 }

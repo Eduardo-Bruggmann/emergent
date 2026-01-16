@@ -1,39 +1,62 @@
-import Agent from "@/core/Agent"
-import Prey from "./Prey"
-import type World from "@/core/World"
+import Entity, { type EntityBehavior } from "@/engine/Entity"
+import { PREY_KIND, type PreyState } from "./Prey"
 
-export default class Predator extends Agent {
-  private target: Prey | null = null
-  private readonly speed = 2.2
+export type PredatorState = { speed: number; targetId: number | null }
+export const PREDATOR_KIND = "predator"
 
-  constructor(x: number, y: number) {
-    super(x, y, 8, "#ef4444")
+export function createPredator(x: number, y: number): Entity<PredatorState> {
+  const state: PredatorState = { speed: 2.2, targetId: null }
+
+  const behavior: EntityBehavior<PredatorState> = {
+    decide: ({ world, entity, state }) => {
+      const preys = world.getEntitiesByKind<PreyState>(PREY_KIND)
+
+      if (preys.length === 0) {
+        state.targetId = null
+        return
+      }
+
+      const closest = preys.reduce<Entity<PreyState> | null>(
+        (current, prey) => {
+          if (!current) return prey
+          return entity.distanceTo(prey) < entity.distanceTo(current)
+            ? prey
+            : current
+        },
+        null
+      )
+
+      state.targetId = closest?.id ?? null
+    },
+    act: ({ world, entity, state }) => {
+      if (state.targetId === null) return
+
+      const target = world
+        .getEntitiesByKind<PreyState>(PREY_KIND)
+        .find((prey) => prey.id === state.targetId)
+
+      if (!target) return
+
+      const dx = target.x - entity.x
+      const dy = target.y - entity.y
+      const magnitude = Math.hypot(dx, dy)
+
+      if (magnitude === 0) return
+
+      entity.translate(
+        (dx / magnitude) * state.speed,
+        (dy / magnitude) * state.speed
+      )
+    },
   }
 
-  protected decide(world: World) {
-    const preys = world.getEntitiesOfType(Prey)
-
-    if (preys.length === 0) {
-      this.target = null
-      return
-    }
-
-    this.target = preys.reduce<Prey | null>((closest, prey) => {
-      const currentDistance = this.distanceTo(prey)
-      const closestDistance = closest ? this.distanceTo(closest) : Infinity
-      return currentDistance < closestDistance ? prey : closest
-    }, null)
-  }
-
-  protected act(_world: World) {
-    if (!this.target) return
-
-    const dx = this.target.x - this.x
-    const dy = this.target.y - this.y
-    const magnitude = Math.hypot(dx, dy)
-
-    if (magnitude === 0) return
-
-    this.translate((dx / magnitude) * this.speed, (dy / magnitude) * this.speed)
-  }
+  return new Entity<PredatorState>({
+    kind: PREDATOR_KIND,
+    x,
+    y,
+    radius: 8,
+    color: "#ef4444",
+    state,
+    behavior,
+  })
 }

@@ -1,4 +1,4 @@
-import type Simulation from "@/core/Simulation"
+import type Simulation from "@/engine/Simulation"
 
 type ControlAction = "start" | "stop" | "reset"
 
@@ -23,7 +23,7 @@ export default function Controls({ simulation, disabled }: ControlsProps) {
   }
 
   const base =
-    "px-3 py-1.5 rounded-md text-sm font-medium transition disabled:opacity-40 disabled:cursor-not-allowed"
+    "px-3 py-1.5 rounded-md text-sm font-medium cursor-pointer transition disabled:opacity-40 disabled:cursor-not-allowed"
 
   return (
     <div class="flex gap-2">

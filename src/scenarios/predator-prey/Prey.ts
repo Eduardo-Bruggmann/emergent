@@ -1,24 +1,35 @@
-import Agent from "@/core/Agent"
-import type World from "@/core/World"
+import Entity, { type EntityBehavior } from "@/engine/Entity"
 
-export default class Prey extends Agent {
-  private readonly speed = 1.5
-  private direction = Math.random() * Math.PI * 2
+export type PreyState = { direction: number; speed: number }
+export const PREY_KIND = "prey"
 
-  constructor(x: number, y: number) {
-    super(x, y, 7, "#22c55e")
+export function createPrey(x: number, y: number): Entity<PreyState> {
+  const state: PreyState = {
+    direction: Math.random() * Math.PI * 2,
+    speed: 1.5,
   }
 
-  protected decide(_world: World) {
-    if (Math.random() < 0.05) {
-      this.direction = Math.random() * Math.PI * 2
-    }
+  const behavior: EntityBehavior<PreyState> = {
+    decide: ({ state }) => {
+      if (Math.random() < 0.05) {
+        state.direction = Math.random() * Math.PI * 2
+      }
+    },
+    act: ({ entity, state }) => {
+      entity.translate(
+        Math.cos(state.direction) * state.speed,
+        Math.sin(state.direction) * state.speed
+      )
+    },
   }
 
-  protected act(_world: World) {
-    this.translate(
-      Math.cos(this.direction) * this.speed,
-      Math.sin(this.direction) * this.speed
-    )
-  }
+  return new Entity<PreyState>({
+    kind: PREY_KIND,
+    x,
+    y,
+    radius: 7,
+    color: "#22c55e",
+    state,
+    behavior,
+  })
 }

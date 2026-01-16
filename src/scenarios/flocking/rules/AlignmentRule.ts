@@ -1,14 +1,17 @@
-import Rule from "@/core/shared/Rule"
-import Boid from "../Boid"
-import type World from "@/core/World"
+import type Rule from "@/engine/shared/Rule"
+import type World from "@/engine/World"
+import {
+  applyBoidForce,
+  boidVelocity,
+  BOID_KIND,
+  type BoidState,
+} from "../Boid"
 
-export default class AlignmentRule extends Rule {
-  constructor(private readonly radius = 50, private readonly strength = 0.5) {
-    super()
-  }
+export default class AlignmentRule implements Rule {
+  constructor(private readonly radius = 50, private readonly strength = 0.5) {}
 
   apply(world: World) {
-    const boids = world.getEntitiesOfType(Boid)
+    const boids = world.getEntitiesByKind<BoidState>(BOID_KIND)
 
     for (const boid of boids) {
       let avgVx = 0
@@ -19,10 +22,10 @@ export default class AlignmentRule extends Rule {
         if (boid === other) continue
 
         const distance = boid.distanceTo(other)
-
         if (distance < this.radius) {
-          avgVx += other.velocity.x
-          avgVy += other.velocity.y
+          const { x: vx, y: vy } = boidVelocity(other)
+          avgVx += vx
+          avgVy += vy
           count++
         }
       }
@@ -30,10 +33,12 @@ export default class AlignmentRule extends Rule {
       if (count > 0) {
         const targetVx = avgVx / count
         const targetVy = avgVy / count
+        const { x, y } = boidVelocity(boid)
 
-        boid.applyForce(
-          (targetVx - boid.velocity.x) * this.strength,
-          (targetVy - boid.velocity.y) * this.strength
+        applyBoidForce(
+          boid,
+          (targetVx - x) * this.strength,
+          (targetVy - y) * this.strength
         )
       }
     }

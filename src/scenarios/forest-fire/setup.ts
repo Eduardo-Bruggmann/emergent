@@ -1,9 +1,9 @@
-import BoundsRule from "@/core/shared/BoundsRule"
-import Tree from "./Tree"
-import type Simulation from "@/core/Simulation"
+import BoundsRule from "@/engine/shared/BoundsRule"
+import { createTree, setTreeState, TREE_KIND, type TreeState } from "./Tree"
+import type Simulation from "@/engine/Simulation"
 
 export function setupForestFireScenario(simulation: Simulation) {
-  const world = simulation.getWorld()
+  const world = simulation.world
 
   world.clear()
   simulation.clearRules()
@@ -12,13 +12,15 @@ export function setupForestFireScenario(simulation: Simulation) {
 
   for (let x = spacing; x < world.width; x += spacing) {
     for (let y = spacing; y < world.height; y += spacing) {
-      world.addEntity(new Tree(x, y))
+      world.addEntity(createTree(x, y))
     }
   }
 
-  const trees = world.getEntitiesOfType(Tree)
+  const trees = world.getEntitiesByKind<TreeState>(TREE_KIND)
   const starter = trees[Math.floor(Math.random() * trees.length)]
-  starter?.setState("burning")
+  if (starter) {
+    setTreeState(starter, "burning")
+  }
 
   simulation.addRule(new BoundsRule())
 }

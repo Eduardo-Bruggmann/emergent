@@ -1,62 +1,79 @@
-import Agent from "@/core/Agent"
-import type World from "@/core/World"
+import Entity, { type EntityBehavior } from "@/engine/Entity"
 
-type VirusState = "healthy" | "infected" | "recovered"
+export type VirusState = "healthy" | "infected" | "recovered"
+export type VirusData = {
+  status: VirusState
+  vx: number
+  vy: number
+  infectedTime: number
+}
 
-export default class Virus extends Agent {
-  private state: VirusState
-  private vx: number
-  private vy: number
-  private infectedTime = 0
-  private readonly recoveryTime = 300
-  private readonly infectionRadius = 10
+export const VIRUS_KIND = "virus"
 
-  constructor(x: number, y: number, state: VirusState = "healthy") {
-    super(x, y, 5)
+const RECOVERY_TIME = 300
+const INFECTION_RADIUS = 10
 
-    this.state = state
-    this.vx = Math.random() * 2 - 1
-    this.vy = Math.random() * 2 - 1
-    this.syncColor()
+export function createVirus(
+  x: number,
+  y: number,
+  status: VirusState = "healthy"
+): Entity<VirusData> {
+  const state: VirusData = {
+    status,
+    vx: Math.random() * 2 - 1,
+    vy: Math.random() * 2 - 1,
+    infectedTime: 0,
   }
 
-  getState(): VirusState {
-    return this.state
-  }
+  const behavior: EntityBehavior<VirusData> = {
+    decide: ({ world, entity, state }) => {
+      if (state.status !== "infected") return
 
-  setState(state: VirusState) {
-    this.state = state
-    this.syncColor()
-  }
+      state.infectedTime++
 
-  protected decide(world: World) {
-    if (this.state !== "infected") return
+      for (const other of world.getEntitiesByKind<VirusData>(VIRUS_KIND)) {
+        if (other === entity) continue
 
-    this.infectedTime++
+        const otherState = other.state
+        if (otherState.status !== "healthy") continue
 
-    for (const other of world.getEntitiesOfType(Virus)) {
-      if (other === this || other.state !== "healthy") continue
-
-      if (
-        this.distanceTo(other) < this.infectionRadius &&
-        Math.random() < 0.2
-      ) {
-        other.setState("infected")
+        if (
+          entity.distanceTo(other) < INFECTION_RADIUS &&
+          Math.random() < 0.2
+        ) {
+          setVirusState(other, "infected")
+        }
       }
-    }
 
-    if (this.infectedTime >= this.recoveryTime) {
-      this.setState("recovered")
-    }
+      if (state.infectedTime >= RECOVERY_TIME) {
+        setVirusState(entity, "recovered")
+      }
+    },
+    act: ({ entity, state }) => {
+      entity.translate(state.vx, state.vy)
+    },
   }
 
-  protected act(_world: World) {
-    this.translate(this.vx, this.vy)
-  }
+  const virus = new Entity<VirusData>({
+    kind: VIRUS_KIND,
+    x,
+    y,
+    radius: 5,
+    state,
+    behavior,
+  })
 
-  private syncColor() {
-    if (this.state === "healthy") this.color = "#22c55e"
-    if (this.state === "infected") this.color = "#fbbf24"
-    if (this.state === "recovered") this.color = "#38bdf8"
-  }
+  setVirusState(virus, status)
+  return virus
+}
+
+export function setVirusState(entity: Entity<VirusData>, status: VirusState) {
+  entity.mutateState((state) => {
+    state.status = status
+    if (status !== "infected") state.infectedTime = 0
+  })
+
+  if (status === "healthy") entity.color = "#22c55e"
+  if (status === "infected") entity.color = "#fbbf24"
+  if (status === "recovered") entity.color = "#38bdf8"
 }

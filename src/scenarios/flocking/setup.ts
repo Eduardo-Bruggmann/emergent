@@ -1,19 +1,19 @@
 import SeparationRule from "./rules/SeparationRule"
 import AlignmentRule from "./rules/AlignmentRule"
 import CohesionRule from "./rules/CohesionRule"
-import BoundsRule from "@/core/shared/BoundsRule"
-import Boid from "./Boid"
-import type Simulation from "@/core/Simulation"
+import BoundsRule from "@/engine/shared/BoundsRule"
+import { createBoid } from "./Boid"
+import type Simulation from "@/engine/Simulation"
 
 export function setupFlockingScenario(simulation: Simulation) {
-  const world = simulation.getWorld()
+  const world = simulation.world
 
   world.clear()
   simulation.clearRules()
 
   for (let i = 0; i < 40; i++) {
     world.addEntity(
-      new Boid(Math.random() * world.width, Math.random() * world.height)
+      createBoid(Math.random() * world.width, Math.random() * world.height)
     )
   }
 

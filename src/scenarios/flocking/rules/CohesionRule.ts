@@ -1,14 +1,12 @@
-import Rule from "@/core/shared/Rule"
-import Boid from "../Boid"
-import type World from "@/core/World"
+import type Rule from "@/engine/shared/Rule"
+import type World from "@/engine/World"
+import { applyBoidForce, BOID_KIND, type BoidState } from "../Boid"
 
-export default class CohesionRule extends Rule {
-  constructor(private readonly radius = 50, private readonly strength = 0.01) {
-    super()
-  }
+export default class CohesionRule implements Rule {
+  constructor(private readonly radius = 50, private readonly strength = 0.01) {}
 
   apply(world: World) {
-    const boids = world.getEntitiesOfType(Boid)
+    const boids = world.getEntitiesByKind<BoidState>(BOID_KIND)
 
     for (const boid of boids) {
       let centerX = 0
@@ -19,7 +17,6 @@ export default class CohesionRule extends Rule {
         if (boid === other) continue
 
         const distance = boid.distanceTo(other)
-
         if (distance > 0 && distance < this.radius) {
           centerX += other.x
           centerY += other.y
@@ -31,7 +28,8 @@ export default class CohesionRule extends Rule {
         const targetX = centerX / count
         const targetY = centerY / count
 
-        boid.applyForce(
+        applyBoidForce(
+          boid,
           (targetX - boid.x) * this.strength,
           (targetY - boid.y) * this.strength
         )

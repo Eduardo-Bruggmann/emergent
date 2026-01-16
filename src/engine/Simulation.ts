@@ -1,24 +1,24 @@
 import CanvasRenderer from "@/renderer/CanvasRenderer"
-import RandomScheduler from "./RandomScheduler"
+import randomScheduler from "./RandomScheduler"
 import World from "./World"
 import type Rule from "./shared/Rule"
-import type Scheduler from "./Scheduler"
+import type { Scheduler } from "./Scheduler"
 
 export type ScenarioSetup = (simulation: Simulation) => void
 
 export default class Simulation {
   private running = false
   private tickCount = 0
-  private readonly world: World
-  private rules: Rule[] = []
+  private readonly _world: World
+  private _rules: Rule[] = []
   private readonly scheduler: Scheduler
   private readonly renderer: CanvasRenderer
   private scenarioSetup: ScenarioSetup
 
   constructor(canvas: HTMLCanvasElement, scenarioSetup: ScenarioSetup) {
-    this.world = new World(canvas.width, canvas.height)
-    this.scheduler = new RandomScheduler()
-    this.renderer = new CanvasRenderer(canvas, this.world)
+    this._world = new World(canvas.width, canvas.height)
+    this.scheduler = randomScheduler
+    this.renderer = new CanvasRenderer(canvas, this._world)
     this.scenarioSetup = scenarioSetup
 
     this.reset()
@@ -41,28 +41,22 @@ export default class Simulation {
     this.clearRules()
 
     this.scenarioSetup?.(this)
+    this.applyRulesOnce()
     this.renderer.render()
   }
 
-  setScenario(setup: ScenarioSetup) {
-    this.scenarioSetup = setup
-    this.reset()
-  }
-
   addRule(rule: Rule) {
-    this.rules.push(rule)
+    this._rules.push(rule)
   }
 
   clearRules() {
-    this.rules = []
+    this._rules = []
   }
 
-  getWorld(): World {
-    return this.world
-  }
-
-  getRules(): readonly Rule[] {
-    return this.rules
+  private applyRulesOnce() {
+    for (const rule of this.rules) {
+      rule.apply(this.world)
+    }
   }
 
   private loop() {
@@ -75,7 +69,7 @@ export default class Simulation {
   private tick() {
     this.tickCount++
 
-    const scheduled = this.scheduler.schedule(this.world.getEntities())
+    const scheduled = this.scheduler(this.world.entities)
 
     for (const entity of scheduled) {
       entity.update(this.world)
@@ -86,5 +80,18 @@ export default class Simulation {
     }
 
     this.renderer.render()
+  }
+
+  get world(): World {
+    return this._world
+  }
+
+  get rules(): readonly Rule[] {
+    return this._rules
+  }
+
+  set scenario(setup: ScenarioSetup) {
+    this.scenarioSetup = setup
+    this.reset()
   }
 }
