@@ -1,12 +1,9 @@
-import BoundsRule from "@/engine/shared/BoundsRule"
+import BoundsRule from "@/engine/BoundsRule"
 import { createTree, setTreeState, TREE_KIND, type TreeState } from "./Tree"
 import type Simulation from "@/engine/Simulation"
 
 export function setupForestFireScenario(simulation: Simulation) {
   const world = simulation.world
-
-  world.clear()
-  simulation.clearRules()
 
   const spacing = 15
 
@@ -16,11 +13,16 @@ export function setupForestFireScenario(simulation: Simulation) {
     }
   }
 
-  const trees = world.getEntitiesByKind<TreeState>(TREE_KIND)
+  const trees = world.getAgentsByKind<TreeState>(TREE_KIND)
   const starter = trees[Math.floor(Math.random() * trees.length)]
   if (starter) {
     setTreeState(starter, "burning")
   }
 
   simulation.addRule(new BoundsRule())
+
+  simulation.stopCondition = (sim) => {
+    const trees = sim.world.getAgentsByKind<TreeState>(TREE_KIND)
+    return trees.every((tree) => tree.state.status !== "burning")
+  }
 }

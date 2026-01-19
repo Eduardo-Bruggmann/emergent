@@ -1,29 +1,32 @@
-import Entity, { type EntityBehavior } from "@/engine/Entity"
+import Agent, { type AgentBehavior } from "@/engine/Agent"
 
-export type PreyState = { direction: number; speed: number }
 export const PREY_KIND = "prey"
 
-export function createPrey(x: number, y: number): Entity<PreyState> {
+export type PreyState = { direction: number; speed: number }
+
+export function createPrey(x: number, y: number): Agent<PreyState> {
   const state: PreyState = {
     direction: Math.random() * Math.PI * 2,
     speed: 1.5,
   }
 
-  const behavior: EntityBehavior<PreyState> = {
-    decide: ({ state }) => {
+  const behavior: AgentBehavior<PreyState> = {
+    decide: ({ agent }) => {
       if (Math.random() < 0.05) {
-        state.direction = Math.random() * Math.PI * 2
+        agent.mutateState((state) => {
+          state.direction = Math.random() * Math.PI * 2
+        })
       }
     },
-    act: ({ entity, state }) => {
-      entity.translate(
-        Math.cos(state.direction) * state.speed,
-        Math.sin(state.direction) * state.speed
+    act: ({ agent }) => {
+      agent.translate(
+        Math.cos(agent.state.direction) * agent.state.speed,
+        Math.sin(agent.state.direction) * agent.state.speed,
       )
     },
   }
 
-  return new Entity<PreyState>({
+  return new Agent<PreyState>({
     kind: PREY_KIND,
     x,
     y,

@@ -1,40 +1,48 @@
-import Entity from "./Entity"
+import Agent from "./Agent"
 
 export default class World {
-  private readonly _entities: Entity[] = []
+  private readonly _agents: Agent<any>[] = []
+  private readonly toAdd: Agent<any>[] = []
+  private readonly toRemove: Agent<any>[] = []
 
   constructor(
     private readonly _width: number,
-    private readonly _height: number
+    private readonly _height: number,
   ) {}
 
-  addEntity(entity: Entity) {
-    this._entities.push(entity)
+  addEntity<TState>(agent: Agent<TState>) {
+    this.toAdd.push(agent)
   }
 
-  removeEntity(entity: Entity) {
-    const index = this._entities.indexOf(entity)
-    if (index >= 0) {
-      this._entities.splice(index, 1)
+  removeEntity<TState>(agent: Agent<TState>) {
+    this.toRemove.push(agent)
+  }
+
+  update() {
+    const snapshot = this._agents.slice()
+
+    for (const agent of snapshot) {
+      agent.update(this)
     }
+
+    this.flush()
   }
 
-  clear() {
-    this._entities.length = 0
+  reset() {
+    this._agents.length = 0
+    this.toAdd.length = 0
+    this.toRemove.length = 0
   }
 
-  getEntitiesByKind<TState = unknown>(kind: string): Entity<TState>[] {
-    return this._entities.filter(
-      (entity) => entity.kind === kind
-    ) as Entity<TState>[]
-  }
+  flush() {
+    for (const e of this.toRemove) {
+      const i = this._agents.indexOf(e)
+      if (i >= 0) this._agents.splice(i, 1)
+    }
 
-  get entities(): readonly Entity[] {
-    return this._entities
-  }
-
-  get entitiesSnapshot(): Entity[] {
-    return [...this._entities]
+    this._agents.push(...this.toAdd)
+    this.toAdd.length = 0
+    this.toRemove.length = 0
   }
 
   get width(): number {
@@ -43,5 +51,13 @@ export default class World {
 
   get height(): number {
     return this._height
+  }
+
+  get agentsSnapshot(): readonly Agent<any>[] {
+    return this._agents.slice()
+  }
+
+  getAgentsByKind<TState = unknown>(kind: string): readonly Agent<TState>[] {
+    return this._agents.filter((e) => e.kind === kind) as Agent<TState>[]
   }
 }

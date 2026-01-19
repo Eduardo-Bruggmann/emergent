@@ -1,4 +1,4 @@
-import Entity from "@/engine/Entity"
+import Agent from "@/engine/Agent"
 import World from "@/engine/World"
 
 export default class CanvasRenderer {
@@ -6,7 +6,7 @@ export default class CanvasRenderer {
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
-    private readonly world: World
+    private readonly world: World,
   ) {
     const context = canvas.getContext("2d")
     if (!context) {
@@ -19,20 +19,27 @@ export default class CanvasRenderer {
   render() {
     this.clear()
 
-    for (const entity of this.world.entities) {
-      this.drawEntity(entity)
+    for (const agent of this.world.agentsSnapshot) {
+      this.drawAgent(agent)
     }
   }
 
   private clear() {
+    this.ctx.save()
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0)
     this.ctx.fillStyle = "#0f172a"
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+    this.ctx.restore()
   }
 
-  private drawEntity(entity: Entity) {
+  private drawAgent(agent: Agent<unknown>) {
+    this.ctx.save()
+
     this.ctx.beginPath()
-    this.ctx.arc(entity.x, entity.y, entity.radius, 0, Math.PI * 2)
-    this.ctx.fillStyle = entity.color
+    this.ctx.arc(agent.x, agent.y, agent.radius, 0, Math.PI * 2)
+    this.ctx.fillStyle = agent.color
     this.ctx.fill()
+
+    this.ctx.restore()
   }
 }

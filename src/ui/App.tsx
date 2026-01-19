@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "preact/hooks"
 import Controls from "./Controls"
 import Simulation from "@/engine/Simulation"
+import type { StatsSnapshot } from "@/engine/StatsCollector"
+import StatsPanel from "./StatsPanel"
 import { setupDLAScenario } from "@/scenarios/dla/setup"
 // import { setupFlockingScenario } from "@/scenarios/flocking/setup"
 // import { setupForestFireScenario } from "@/scenarios/forest-fire/setup"
@@ -10,15 +12,24 @@ import { setupDLAScenario } from "@/scenarios/dla/setup"
 export default function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const simulationRef = useRef<Simulation | null>(null)
-  const [ready, setReady] = useState(false)
+  const [simulation, setSimulation] = useState<Simulation | null>(null)
+  const [stats, setStats] = useState<StatsSnapshot | null>(null)
 
   useEffect(() => {
     if (!canvasRef.current) return
 
-    simulationRef.current = new Simulation(canvasRef.current, setupDLAScenario)
-    setReady(true)
+    const sim = new Simulation(canvasRef.current, setupDLAScenario)
+    simulationRef.current = sim
+    setSimulation(sim)
 
-    return () => simulationRef.current?.stop()
+    const unsubscribe = simulationRef.current.onStats((snapshot) =>
+      setStats(snapshot),
+    )
+
+    return () => {
+      unsubscribe()
+      simulationRef.current?.stop()
+    }
   }, [])
 
   return (
@@ -30,7 +41,7 @@ export default function App() {
             <p class="text-xs text-slate-400">Agent-based simulation</p>
           </div>
 
-          <Controls simulation={simulationRef.current} disabled={!ready} />
+          <Controls simulation={simulationRef.current} disabled={!simulation} />
         </header>
 
         <div class="bg-slate-900 border border-slate-800 rounded-lg p-2">
@@ -41,6 +52,8 @@ export default function App() {
             class="w-full h-auto bg-slate-950 rounded"
           />
         </div>
+
+        <StatsPanel snapshot={stats} />
       </div>
     </div>
   )

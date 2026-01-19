@@ -1,3 +1,5 @@
-import type Entity from "./Entity"
+import type Agent from "./Agent"
 
-export type Scheduler = (entities: readonly Entity[]) => Entity[]
+export type Scheduler = (
+  agents: readonly Agent<unknown>[],
+) => readonly Agent<unknown>[]

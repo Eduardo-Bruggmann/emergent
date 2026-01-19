@@ -1,7 +1,14 @@
-import type Entity from "./Entity"
 import type { Scheduler } from "./Scheduler"
 
-const randomScheduler: Scheduler = (entities: readonly Entity[]): Entity[] =>
-  [...entities].sort(() => Math.random() - 0.5)
+const randomScheduler: Scheduler = (agents) => {
+  const result = agents.slice()
+
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+
+  return result
+}
 
 export default randomScheduler

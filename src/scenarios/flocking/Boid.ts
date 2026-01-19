@@ -1,4 +1,4 @@
-import Entity, { type EntityBehavior, type Vector2 } from "@/engine/Entity"
+import Agent, { AgentBehavior, Position } from "@/engine/Agent"
 
 export const BOID_KIND = "boid"
 
@@ -8,43 +8,38 @@ export type BoidState = {
   maxSpeed: number
 }
 
-export function createBoid(x: number, y: number): Entity<BoidState> {
+export function createBoid(x: number, y: number): Agent<BoidState> {
   const state: BoidState = {
     vx: Math.random() * 2 - 1,
     vy: Math.random() * 2 - 1,
     maxSpeed: 2,
   }
 
-  const behavior: EntityBehavior<BoidState> = {
-    act: ({ entity, state }) => {
-      limitSpeed(state)
-      entity.translate(state.vx, state.vy)
+  const behavior: AgentBehavior<BoidState> = {
+    act: ({ agent }) => {
+      limitSpeed(agent.state)
+      agent.translate(agent.state.vx, agent.state.vy)
     },
   }
 
-  return new Entity<BoidState>({
-    kind: BOID_KIND,
+  return new Agent<BoidState>({
     x,
     y,
     radius: 6,
     color: "purple",
+    kind: BOID_KIND,
     state,
     behavior,
   })
 }
 
-export function boidVelocity(boid: Entity<BoidState>): Vector2 {
+export function boidVelocity(boid: Agent<BoidState>): Position {
   return { x: boid.state.vx, y: boid.state.vy }
 }
 
-export function applyBoidForce(
-  boid: Entity<BoidState>,
-  fx: number,
-  fy: number
-) {
+export function applyBoidForce(boid: Agent<BoidState>, fx: number, fy: number) {
   boid.mutateState((state) => {
-    state.vx += fx
-    state.vy += fy
+    limitSpeed(state)
   })
 }
 

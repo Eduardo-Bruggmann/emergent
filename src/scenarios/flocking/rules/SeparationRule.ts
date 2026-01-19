@@ -1,12 +1,15 @@
-import type Rule from "@/engine/shared/Rule"
+import type Rule from "@/engine/Rule"
 import type World from "@/engine/World"
 import { applyBoidForce, BOID_KIND, type BoidState } from "../Boid"
 
 export default class SeparationRule implements Rule {
-  constructor(private readonly radius = 25, private readonly strength = 1) {}
+  constructor(
+    private readonly radius = 25,
+    private readonly strength = 1,
+  ) {}
 
   apply(world: World) {
-    const boids = world.getEntitiesByKind<BoidState>(BOID_KIND)
+    const boids = world.getAgentsByKind<BoidState>(BOID_KIND)
 
     for (const boid of boids) {
       let fx = 0
@@ -31,7 +34,7 @@ export default class SeparationRule implements Rule {
         applyBoidForce(
           boid,
           (fx / count) * this.strength,
-          (fy / count) * this.strength
+          (fy / count) * this.strength,
         )
       }
     }

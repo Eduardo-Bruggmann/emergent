@@ -1,6 +1,12 @@
-import Entity, { type EntityBehavior } from "@/engine/Entity"
+import Agent, { type AgentBehavior } from "@/engine/Agent"
+
+export const VIRUS_KIND = "virus"
+
+const RECOVERY_TIME = 300
+const INFECTION_RADIUS = 10
 
 export type VirusState = "healthy" | "infected" | "recovered"
+
 export type VirusData = {
   status: VirusState
   vx: number
@@ -8,16 +14,11 @@ export type VirusData = {
   infectedTime: number
 }
 
-export const VIRUS_KIND = "virus"
-
-const RECOVERY_TIME = 300
-const INFECTION_RADIUS = 10
-
 export function createVirus(
   x: number,
   y: number,
-  status: VirusState = "healthy"
-): Entity<VirusData> {
+  status: VirusState = "healthy",
+): Agent<VirusData> {
   const state: VirusData = {
     status,
     vx: Math.random() * 2 - 1,
@@ -25,40 +26,40 @@ export function createVirus(
     infectedTime: 0,
   }
 
-  const behavior: EntityBehavior<VirusData> = {
-    decide: ({ world, entity, state }) => {
-      if (state.status !== "infected") return
+  const behavior: AgentBehavior<VirusData> = {
+    decide: ({ world, agent }) => {
+      if (agent.state.status !== "infected") return
 
-      state.infectedTime++
+      agent.mutateState((state) => {
+        state.infectedTime++
+      })
 
-      for (const other of world.getEntitiesByKind<VirusData>(VIRUS_KIND)) {
-        if (other === entity) continue
+      for (const other of world.getAgentsByKind<VirusData>(VIRUS_KIND)) {
+        if (other === agent) continue
 
         const otherState = other.state
         if (otherState.status !== "healthy") continue
 
-        if (
-          entity.distanceTo(other) < INFECTION_RADIUS &&
-          Math.random() < 0.2
-        ) {
+        if (agent.distanceTo(other) < INFECTION_RADIUS && Math.random() < 0.2) {
           setVirusState(other, "infected")
         }
       }
 
-      if (state.infectedTime >= RECOVERY_TIME) {
-        setVirusState(entity, "recovered")
+      if (agent.state.infectedTime >= RECOVERY_TIME) {
+        setVirusState(agent, "recovered")
       }
     },
-    act: ({ entity, state }) => {
-      entity.translate(state.vx, state.vy)
+    act: ({ agent }) => {
+      agent.translate(agent.state.vx, agent.state.vy)
     },
   }
 
-  const virus = new Entity<VirusData>({
+  const virus = new Agent<VirusData>({
     kind: VIRUS_KIND,
     x,
     y,
     radius: 5,
+    color: "#22c55e",
     state,
     behavior,
   })
@@ -67,13 +68,13 @@ export function createVirus(
   return virus
 }
 
-export function setVirusState(entity: Entity<VirusData>, status: VirusState) {
-  entity.mutateState((state) => {
+export function setVirusState(agent: Agent<VirusData>, status: VirusState) {
+  agent.mutateState((state) => {
     state.status = status
     if (status !== "infected") state.infectedTime = 0
   })
 
-  if (status === "healthy") entity.color = "#22c55e"
-  if (status === "infected") entity.color = "#fbbf24"
-  if (status === "recovered") entity.color = "#38bdf8"
+  if (status === "healthy") agent.color = "#22c55e"
+  if (status === "infected") agent.color = "#fbbf24"
+  if (status === "recovered") agent.color = "#38bdf8"
 }

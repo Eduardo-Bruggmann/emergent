@@ -1,14 +1,11 @@
 import Simulation from "@/engine/Simulation"
 import { createAggregate } from "./Aggregate"
 import { createParticle } from "./Particle"
-import BoundsRule from "@/engine/shared/BoundsRule"
+import BoundsRule from "@/engine/BoundsRule"
 import AggregationRule from "./rules/AggregationRule"
 
 export function setupDLAScenario(simulation: Simulation) {
   const { world } = simulation
-
-  world.clear()
-  simulation.clearRules()
 
   world.addEntity(createAggregate(world.width / 2, world.height / 2))
 
@@ -19,11 +16,16 @@ export function setupDLAScenario(simulation: Simulation) {
     world.addEntity(
       createParticle(
         world.width / 2 + Math.cos(angle) * radius,
-        world.height / 2 + Math.sin(angle) * radius
-      )
+        world.height / 2 + Math.sin(angle) * radius,
+      ),
     )
   }
 
   simulation.addRule(new BoundsRule())
   simulation.addRule(new AggregationRule())
+
+  simulation.stopCondition = (sim) => {
+    const agents = sim.world.agentsSnapshot
+    return !agents.some((a) => a.kind === "particle")
+  }
 }
