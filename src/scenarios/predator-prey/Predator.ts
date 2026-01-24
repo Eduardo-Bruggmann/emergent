@@ -31,23 +31,43 @@ export function createPredator(x: number, y: number): Agent<PredatorState> {
       })
     },
     act: ({ world, agent }) => {
-      if (agent.state.targetId === null) return
+      let moveX = 0
+      let moveY = 0
 
-      const target = world
-        .getAgentsByKind<PreyState>(PREY_KIND)
-        .find((prey) => prey.id === agent.state.targetId)
-      if (!target) return
+      // Separation from other predators
+      for (const other of world.getAgentsByKind<PredatorState>(PREDATOR_KIND)) {
+        if (other === agent) continue
+        const dist = agent.distanceTo(other)
+        if (dist < 20 && dist > 0) {
+          moveX += (agent.x - other.x) / dist
+          moveY += (agent.y - other.y) / dist
+        }
+      }
 
-      const dx = target.x - agent.x
-      const dy = target.y - agent.y
-      const magnitude = Math.hypot(dx, dy)
+      if (agent.state.targetId !== null) {
+        const target = world
+          .getAgentsByKind<PreyState>(PREY_KIND)
+          .find((prey) => prey.id === agent.state.targetId)
 
-      if (magnitude === 0) return
+        if (target) {
+          const dx = target.x - agent.x
+          const dy = target.y - agent.y
+          const magnitude = Math.hypot(dx, dy)
 
-      agent.translate(
-        (dx / magnitude) * agent.state.speed,
-        (dy / magnitude) * agent.state.speed,
-      )
+          if (magnitude > 0) {
+            moveX += (dx / magnitude) * agent.state.speed
+            moveY += (dy / magnitude) * agent.state.speed
+          }
+        }
+      }
+
+      if (moveX !== 0 || moveY !== 0) {
+        const mag = Math.hypot(moveX, moveY)
+        agent.translate(
+          (moveX / mag) * agent.state.speed,
+          (moveY / mag) * agent.state.speed,
+        )
+      }
     },
   }
 

@@ -6,13 +6,18 @@ export type BoidState = {
   vx: number
   vy: number
   maxSpeed: number
+  maxForce: number
 }
 
 export function createBoid(x: number, y: number): Agent<BoidState> {
+  const angle = Math.random() * Math.PI * 2
+  const speed = 2 + Math.random() * 2
+
   const state: BoidState = {
-    vx: Math.random() * 2 - 1,
-    vy: Math.random() * 2 - 1,
-    maxSpeed: 2,
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed,
+    maxSpeed: 4,
+    maxForce: 0.2,
   }
 
   const behavior: AgentBehavior<BoidState> = {
@@ -26,7 +31,7 @@ export function createBoid(x: number, y: number): Agent<BoidState> {
     x,
     y,
     radius: 6,
-    color: "purple",
+    color: "#558cf4",
     kind: BOID_KIND,
     state,
     behavior,
@@ -39,7 +44,16 @@ export function boidVelocity(boid: Agent<BoidState>): Position {
 
 export function applyBoidForce(boid: Agent<BoidState>, fx: number, fy: number) {
   boid.mutateState((state) => {
-    limitSpeed(state)
+    // Limit force magnitude
+    const forceMag = Math.hypot(fx, fy)
+    if (forceMag > state.maxForce) {
+      fx = (fx / forceMag) * state.maxForce
+      fy = (fy / forceMag) * state.maxForce
+    }
+
+    // Apply force to velocity
+    state.vx += fx
+    state.vy += fy
   })
 }
 

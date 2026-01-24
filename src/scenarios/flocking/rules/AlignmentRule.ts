@@ -9,8 +9,8 @@ import {
 
 export default class AlignmentRule implements Rule {
   constructor(
-    private readonly radius = 50,
-    private readonly strength = 0.5,
+    private readonly visualRange = 75,
+    private readonly matchingFactor = 0.05,
   ) {}
 
   apply(world: World) {
@@ -19,30 +19,30 @@ export default class AlignmentRule implements Rule {
     for (const boid of boids) {
       let avgVx = 0
       let avgVy = 0
-      let count = 0
+      let numNeighbors = 0
 
       for (const other of boids) {
         if (boid === other) continue
 
         const distance = boid.distanceTo(other)
-        if (distance < this.radius) {
+        if (distance < this.visualRange) {
           const { x: vx, y: vy } = boidVelocity(other)
           avgVx += vx
           avgVy += vy
-          count++
+          numNeighbors++
         }
       }
 
-      if (count > 0) {
-        const targetVx = avgVx / count
-        const targetVy = avgVy / count
+      if (numNeighbors > 0) {
+        avgVx /= numNeighbors
+        avgVy /= numNeighbors
 
         const { x: vx, y: vy } = boidVelocity(boid)
 
         applyBoidForce(
           boid,
-          (targetVx - vx) * this.strength,
-          (targetVy - vy) * this.strength,
+          (avgVx - vx) * this.matchingFactor,
+          (avgVy - vy) * this.matchingFactor,
         )
       }
     }

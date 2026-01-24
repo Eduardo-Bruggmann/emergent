@@ -3,7 +3,9 @@ import Agent, { type AgentBehavior } from "@/engine/Agent"
 export const VIRUS_KIND = "virus"
 
 const RECOVERY_TIME = 300
-const INFECTION_RADIUS = 10
+const INFECTION_RADIUS = 15
+const INFECTION_CHANCE = 0.4
+const SEPARATION_RADIUS = 12
 
 export type VirusState = "healthy" | "infected" | "recovered"
 
@@ -28,6 +30,14 @@ export function createVirus(
 
   const behavior: AgentBehavior<VirusData> = {
     decide: ({ world, agent }) => {
+      if (agent.state.status !== "infected" && Math.random() < 0.05) {
+        const angle = Math.random() * Math.PI * 2
+        agent.mutateState((s) => {
+          s.vx = Math.cos(angle) * 1.5
+          s.vy = Math.sin(angle) * 1.5
+        })
+      }
+
       if (agent.state.status !== "infected") return
 
       agent.mutateState((state) => {
@@ -36,11 +46,12 @@ export function createVirus(
 
       for (const other of world.getAgentsByKind<VirusData>(VIRUS_KIND)) {
         if (other === agent) continue
+        if (other.state.status !== "healthy") continue
 
-        const otherState = other.state
-        if (otherState.status !== "healthy") continue
-
-        if (agent.distanceTo(other) < INFECTION_RADIUS && Math.random() < 0.2) {
+        if (
+          agent.distanceTo(other) < INFECTION_RADIUS &&
+          Math.random() < INFECTION_CHANCE
+        ) {
           setVirusState(other, "infected")
         }
       }
@@ -49,8 +60,22 @@ export function createVirus(
         setVirusState(agent, "recovered")
       }
     },
-    act: ({ agent }) => {
-      agent.translate(agent.state.vx, agent.state.vy)
+    act: ({ world, agent }) => {
+      let moveX = agent.state.vx
+      let moveY = agent.state.vy
+
+      if (agent.state.status !== "infected") {
+        for (const other of world.getAgentsByKind<VirusData>(VIRUS_KIND)) {
+          if (other === agent || other.state.status === "infected") continue
+          const dist = agent.distanceTo(other)
+          if (dist < SEPARATION_RADIUS && dist > 0) {
+            moveX += ((agent.x - other.x) / dist) * 0.5
+            moveY += ((agent.y - other.y) / dist) * 0.5
+          }
+        }
+      }
+
+      agent.translate(moveX, moveY)
     },
   }
 

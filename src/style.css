@@ -1,1 +1,19 @@
 @import "tailwindcss";
+
+* {
+  font-family: "Mulish", sans-serif;
+}
+
+html {
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+}

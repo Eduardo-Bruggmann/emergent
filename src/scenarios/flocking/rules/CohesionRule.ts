@@ -4,8 +4,8 @@ import { applyBoidForce, BOID_KIND, type BoidState } from "../Boid"
 
 export default class CohesionRule implements Rule {
   constructor(
-    private readonly radius = 50,
-    private readonly strength = 0.01,
+    private readonly visualRange = 75,
+    private readonly centeringFactor = 0.005,
   ) {}
 
   apply(world: World) {
@@ -14,27 +14,27 @@ export default class CohesionRule implements Rule {
     for (const boid of boids) {
       let centerX = 0
       let centerY = 0
-      let count = 0
+      let numNeighbors = 0
 
       for (const other of boids) {
         if (boid === other) continue
 
         const distance = boid.distanceTo(other)
-        if (distance < this.radius) {
+        if (distance < this.visualRange) {
           centerX += other.x
           centerY += other.y
-          count++
+          numNeighbors++
         }
       }
 
-      if (count > 0) {
-        const targetX = centerX / count
-        const targetY = centerY / count
+      if (numNeighbors > 0) {
+        centerX /= numNeighbors
+        centerY /= numNeighbors
 
         applyBoidForce(
           boid,
-          (targetX - boid.x) * this.strength,
-          (targetY - boid.y) * this.strength,
+          (centerX - boid.x) * this.centeringFactor,
+          (centerY - boid.y) * this.centeringFactor,
         )
       }
     }

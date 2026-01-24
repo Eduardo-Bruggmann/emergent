@@ -1,6 +1,9 @@
 import CanvasRenderer from "@/renderer/CanvasRenderer"
 import randomScheduler from "./RandomScheduler"
-import StatsCollector, { type StatsSnapshot } from "./StatsCollector"
+import StatsCollector, {
+  ScenarioStatsProvider,
+  type StatsSnapshot,
+} from "./StatsCollector"
 import World from "./World"
 import type Rule from "./Rule"
 import type { Scheduler } from "./Scheduler"
@@ -19,6 +22,7 @@ export default class Simulation {
   private scenarioSetup: ScenarioSetup
   private _stopCondition?: StopCondition
   private readonly stats: StatsCollector
+  private _statsProvider: ScenarioStatsProvider | undefined = undefined
 
   constructor(canvas: HTMLCanvasElement, scenarioSetup: ScenarioSetup) {
     this._world = new World(canvas.width, canvas.height)
@@ -44,6 +48,7 @@ export default class Simulation {
     this.stop()
     this.tickCount = 0
     this._stopCondition = undefined
+    this._statsProvider = undefined
     this.world.reset()
     this.clearRules()
 
@@ -53,7 +58,15 @@ export default class Simulation {
     this.world.flush()
     this.renderer.render()
     this.stats.reset()
-    this.stats.record(this.tickCount, this.collectCounts())
+    this.recordStats()
+  }
+
+  private recordStats() {
+    this.stats.record(
+      this.tickCount,
+      this.collectCounts(),
+      this._statsProvider?.getExtraStats?.(),
+    )
   }
 
   private loop() {
@@ -83,7 +96,7 @@ export default class Simulation {
 
     this.world.flush()
     this.renderer.render()
-    this.stats.record(this.tickCount, this.collectCounts())
+    this.recordStats()
   }
 
   addRule(rule: Rule) {
@@ -127,7 +140,15 @@ export default class Simulation {
     this.reset()
   }
 
+  get stopCondition(): StopCondition | undefined {
+    return this._stopCondition
+  }
+
   set stopCondition(condition: StopCondition) {
     this._stopCondition = condition
+  }
+
+  set statsProvider(provider: ScenarioStatsProvider) {
+    this._statsProvider = provider
   }
 }

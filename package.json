@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview --host"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.18",
@@ -14,6 +14,7 @@
     "vite": "^7.2.4"
   },
   "dependencies": {
+    "lucide-preact": "^0.562.0",
     "preact": "^10.28.2"
   }
 }

@@ -1,4 +1,3 @@
-// TODO: fix O(n²) fire spreading performance issue for large forests
 import Agent, { type AgentBehavior } from "@/engine/Agent"
 import type World from "@/engine/World"
 
@@ -22,9 +21,21 @@ export function createTree(
     decide: ({ world, agent }) => {
       if (agent.state.status !== "burning") return
 
-      advanceBurn(agent)
-      spreadFire(world, agent)
-      maybeFinishBurn(agent, agent.state.burnTime)
+      agent.mutateState((s) => s.burnTime++)
+
+      for (const other of world.getAgentsByKind<TreeState>(TREE_KIND)) {
+        if (other === agent || other.state.status !== "tree") continue
+        if (
+          agent.distanceTo(other) <= FIRE_RADIUS &&
+          Math.random() < SPREAD_CHANCE
+        ) {
+          setTreeState(other, "burning")
+        }
+      }
+
+      if (agent.state.burnTime >= MAX_BURN_TIME) {
+        setTreeState(agent, "burned")
+      }
     },
   }
 
@@ -42,38 +53,10 @@ export function createTree(
   return tree
 }
 
-function advanceBurn(agent: Agent<TreeState>) {
-  agent.mutateState((state) => {
-    state.burnTime++
-  })
-}
-
-function spreadFire(world: World, agent: Agent<TreeState>) {
-  for (const other of world.getAgentsByKind<TreeState>(TREE_KIND)) {
-    if (other === agent) continue
-
-    const otherState = other.state
-    if (otherState.status !== "tree") continue
-
-    if (
-      agent.distanceTo(other) <= FIRE_RADIUS &&
-      Math.random() < SPREAD_CHANCE
-    ) {
-      setTreeState(other, "burning")
-    }
-  }
-}
-
-function maybeFinishBurn(agent: Agent<TreeState>, burnTime: number) {
-  if (burnTime >= MAX_BURN_TIME) {
-    setTreeState(agent, "burned")
-  }
-}
-
 export function setTreeState(agent: Agent<TreeState>, stage: TreeStage) {
   agent.mutateState((state) => {
     state.status = stage
-    state.burnTime = stage === "burning" ? 0 : state.burnTime
+    if (stage === "burning") state.burnTime = 0
   })
 
   if (stage === "tree") agent.color = "#22c55e"
