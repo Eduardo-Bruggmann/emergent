@@ -1,27 +1,34 @@
 # Emergent
 
-Agent-based simulation playground that lets you plug in different rules and watch complex behaviors emerge. Built with TypeScript + Preact on top of Vite.
+Agent-based simulation playground built with TypeScript + Preact (Vite).
 
-## Scenarios
+## Scenarios (UI navigation)
 
-- **Diffusion-Limited Aggregation (DLA):** particles wander until they stick to a growing cluster at the center, producing branching crystal-like patterns.
-- **Flocking (Boids):** agents follow separation, alignment, and cohesion rules to move as a coherent swarm.
-- **Forest Fire:** a grid of trees where ignition spreads across neighbors until it burns out.
-- **Predator–Prey:** two populations; predators chase and consume prey while both roam the field.
-- **Virus Spread:** individuals move freely, with one patient zero starting an infection that can propagate through contacts.
+Use the arrow buttons in the header to cycle scenarios at runtime:
 
-## Tech Stack
+- **Diffusion-Limited Aggregation (DLA):** particles wander until they stick to a growing cluster at the center.
+- **Flocking (Boids):** separation, alignment, and cohesion create swarm motion.
+- **Forest Fire:** ignition spreads across neighboring trees until it burns out.
+- **Predator–Prey:** predators chase and consume prey while both roam the field.
+- **Virus Spread:** one patient zero can infect nearby agents; they eventually recover.
+
+## Controls and stats
+
+- **Start / Stop / Reset** buttons manage the simulation loop.
+- **Stats panel** (right) shows counts per agent kind with sparklines and extra metrics per scenario.
+
+## Tech stack
 
 - TypeScript
 - Preact
 - Vite
-- Tailwind (utility classes via `@tailwindcss/vite`)
+- Tailwind utilities (via @tailwindcss/vite)
 
-## Running Locally
+## Running locally
 
-Prerequisites: Node 18+ and pnpm installed.
+Prerequisites: Node 18+ and pnpm.
 
-1. Install deps
+1. Install dependencies
 
 ```bash
 pnpm install
@@ -33,13 +40,9 @@ pnpm install
 pnpm dev
 ```
 
-The app runs on http://localhost:5173 (Vite default).
+Open http://localhost:5173 (default Vite port).
 
-## Switching Scenarios
-
-The UI currently boots with the DLA setup. To try a different scenario, swap the setup function passed to `new Simulation` in `src/ui/App.tsx` (the other imports are already present and can be uncommented).
-
-## Production Build
+## Production build
 
 ```bash
 pnpm build
